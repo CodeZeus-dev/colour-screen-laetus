@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:http/http.dart' as http;
+import 'dart:convert' as convert;
 import './models/color_shift.dart';
 
 void main() => runApp(MyApp());
@@ -10,24 +11,47 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  Future getColour() async {
+    var url = 'http://thecolorapi.com/id?hex=0dbc81';
+    var response = await http.get(url);
+    var jsonResponse = convert.json.decode(response.body);
+
+    print(jsonResponse);
+
+    return {
+      'rgb': {
+        'r': jsonResponse['rgb']['r'],
+        'g': jsonResponse['rgb']['g'],
+        'b': jsonResponse['rgb']['b']
+      },
+      'cymk': {
+        'c': jsonResponse['cymk']['c'],
+        'y': jsonResponse['cymk']['y'],
+        'm': jsonResponse['cymk']['m'],
+        'k': jsonResponse['cymk']['k']
+      }
+    };
+  }
+
+  Color _currentColour;
+  Color _changingColour;
+
   double _currentSliderValue;
-  final Color _currentColour = Color.fromRGBO(0, 0, 255, 0.5); //Color(0xFFF1CFFF);
-  Color _changingColour = Color.fromRGBO(0, 0, 255, 0.5); //Color(0xFFF1CFFF);
-  List<int> _currentColourRGB = [0, 0, 255]; //[241, 207, 255];
-  List<int> _changingColourRGB = [
-    0,
-    0,
-    255,
-  ]; //[241, 207, 255];
   Map<String, dynamic> _updatedColour;
+
   @override
-  void initState() {
+  void initState() async {
     super.initState();
+    Map colour = await getColour();
+    _currentColour = Color.fromRGBO(
+        colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
+    Color _changingColour = Color.fromRGBO(
+        colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
     // Update the RGBO values given a colour from the colour picker screen
     _updatedColour = {'r': 0, 'g': 0, 'b': 255, 'a': 0.5};
     _currentSliderValue = _updatedColour['a'] * 100;
   }
- 
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -313,7 +337,9 @@ class _MyAppState extends State<MyApp> {
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           FlatButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              getColour();
+                            },
                             child: Text('RESET'),
                           ),
                         ],
