@@ -11,21 +11,26 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Proxima Nova',
       ),
       routes: <String, WidgetBuilder>{
-        '/color/details': (BuildContext context) => ColorDetailsScreen()
+        '/color/details': (context) => ColorDetailsScreen()
       },
-      home: Scaffold(
-        body: Builder(builder: (ctx) {
-          return Center(
-            child: Container(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.of(context).pushNamed('/color/details');
-                },
-                child: Text('Check info here...'),
-              ),
-            ),
-          );
-        }),
+      home: Scaffy(),
+    );
+  }
+}
+
+class Scaffy extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Container(
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/color/details');
+            },
+            child: Text('Check info here...'),
+          ),
+        ),
       ),
     );
   }
