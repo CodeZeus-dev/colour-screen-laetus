@@ -24,11 +24,11 @@ class _MyAppState extends State<MyApp> {
         'g': jsonResponse['rgb']['g'],
         'b': jsonResponse['rgb']['b']
       },
-      'cymk': {
-        'c': jsonResponse['cymk']['c'],
-        'y': jsonResponse['cymk']['y'],
-        'm': jsonResponse['cymk']['m'],
-        'k': jsonResponse['cymk']['k']
+      'cmyk': {
+        'c': jsonResponse['cmyk']['c'],
+        'm': jsonResponse['cmyk']['m'],
+        'y': jsonResponse['cmyk']['y'],
+        'k': jsonResponse['cmyk']['k']
       }
     };
   }
@@ -39,21 +39,36 @@ class _MyAppState extends State<MyApp> {
   double _currentSliderValue;
   Map<String, dynamic> _updatedColour;
 
+  var _colour;
+
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    Map colour = await getColour();
-    _currentColour = Color.fromRGBO(
-        colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
-    Color _changingColour = Color.fromRGBO(
-        colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
-    // Update the RGBO values given a colour from the colour picker screen
-    _updatedColour = {'r': 0, 'g': 0, 'b': 255, 'a': 0.5};
-    _currentSliderValue = _updatedColour['a'] * 100;
+    getColour().then((colour) {
+      _currentColour = Color.fromRGBO(
+          colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
+      _changingColour = Color.fromRGBO(
+          colour['rgb']['r'], colour['rgb']['g'], colour['rgb']['b'], 1);
+      _updatedColour = {'r': 0, 'g': 0, 'b': 255, 'a': 1.0};
+      _currentSliderValue = 100;
+      setState(() {
+        _colour = colour;
+      });
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_colour == null) {
+      return MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    } 
+
     return MaterialApp(
       theme: ThemeData(
         fontFamily: 'Proxima Nova',
@@ -174,25 +189,25 @@ class _MyAppState extends State<MyApp> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    '6.63',
+                                    _colour['cmyk']['c'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    '19.87',
+                                    _colour['cmyk']['m'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    '0',
+                                    _colour['cmyk']['y'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    '0',
+                                    _colour['cmyk']['k'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
@@ -253,19 +268,19 @@ class _MyAppState extends State<MyApp> {
                               Column(
                                 children: <Widget>[
                                   Text(
-                                    _updatedColour['r'].toString(),
+                                    _colour['rgb']['r'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    _updatedColour['g'].toString(),
+                                    _colour['rgb']['g'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
                                   ),
                                   Text(
-                                    _updatedColour['b'].toString(),
+                                    _colour['rgb']['b'].toString(),
                                     style: TextStyle(
                                       fontSize: 18,
                                     ),
@@ -315,9 +330,9 @@ class _MyAppState extends State<MyApp> {
                                 _currentSliderValue = value;
                                 _updatedColour = shiftColor(
                                     a: 1.0,
-                                    r: _currentColourRGB[0],
-                                    g: _currentColourRGB[1],
-                                    b: _currentColourRGB[2],
+                                    r: _colour['rgb']['r'],
+                                    g: _colour['rgb']['g'],
+                                    b: _colour['rgb']['b'],
                                     shiftValue: _currentSliderValue);
                                 _changingColour = Color.fromRGBO(
                                     _updatedColour['r'],
